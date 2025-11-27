@@ -1,0 +1,22 @@
+# Web框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# 数据验证
+pydantic==2.5.0
+
+# 环境变量管理
+python-dotenv==1.0.0
+
+# 阿里云OSS
+oss2==2.18.4
+
+# 核心依赖 - numpy需要兼容opencv和librosa
+numpy>=1.23.0,<2.0.0
+
+# 媒体处理
+opencv-python==4.8.1.78
+
+# 音频处理（可选 - 用于自动获取音频时长）
+librosa==0.10.1
+
