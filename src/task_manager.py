@@ -64,7 +64,6 @@ class JianYingTask:
                 shutil.rmtree(project_path)
                 logger.info(f"删除磁盘上的任务文件: {project_path}")
             self.last_access_time = time.time()
-        self.jianyingProject.destroy()
     
     def is_expired(self, expire_seconds: int) -> bool:
         """检查任务是否过期且未使用（线程安全）"""
@@ -103,11 +102,13 @@ class TaskManager:
         """移除过期或标记删除的任务"""
         # 收集需要删除的任务（写锁）
         to_remove = []
+        to_destroy = []
         with self.rwlock.gen_wlock():
             for task_id, task in list(self.task_dict.items()):
                 # 标记删除且空闲
                 if task.marked_for_deletion and task.is_expired(0):
                     to_remove.append((task_id, task))
+                    to_destroy.append((task_id, task))
                 # 自动过期
                 elif task.is_expired(TASK_IDLE_TIME):
                     to_remove.append((task_id, task))
@@ -118,9 +119,10 @@ class TaskManager:
                 logger.info(f"Remove task from memory: {task_id}")
         
         # 销毁任务（在锁外执行，避免阻塞）
-        for task_id, task in to_remove:
+        for task_id, task in to_destroy:
             try:
                 task.destroy()
+                logger.info(f"Destroy task: {task_id}")
             except Exception as e:
                 logger.error(f"Destroy task failed: {task_id}, {e}")
     
