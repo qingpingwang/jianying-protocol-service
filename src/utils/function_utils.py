@@ -4,6 +4,7 @@ import logging
 import json
 import hashlib
 import uuid
+import subprocess
 logger = logging.getLogger(__name__)
 
 # 缓存目录（绝对路径）
@@ -42,83 +43,72 @@ def get_material_type_by_extension(path: str) -> str:
     else:
         return 'video'
 
-def get_video_duration(video_path: str) -> int:
+def get_media_duration(media_path: str) -> int:
     """
-    获取视频时长（毫秒）
+    使用 ffprobe 获取音视频时长（毫秒）
+    
+    统一处理音频和视频文件，支持本地文件和 URL。
     
     Args:
-        video_path: 视频文件路径
-    
-    Returns:    
-        时长（毫秒），失败返回 0
-    """
-    try:
-        import cv2
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            logger.error(f"无法打开视频文件: {video_path}")
-            return 0
-        
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        cap.release()
-        
-        if fps <= 0:
-            logger.error(f"无法获取视频帧率: {video_path}")
-            return 0
-        
-        duration = frame_count / fps
-        logger.info(f"视频时长: {video_path} -> {duration:.2f}s")
-        return int(duration * 1000)
-    
-    except ImportError:
-        logger.error("OpenCV 未安装，请运行: pip install opencv-python")
-        return 0
-    except Exception as e:
-        logger.error(f"获取视频时长失败: {video_path}, {e}")
-        return 0
-    
-def get_audio_duration(audio_path: str) -> int:
-    """
-    获取音频时长（毫秒）
-    
-    Args:
-        audio_path: 音频文件路径（本地路径或 URL）
+        media_path: 媒体文件路径（本地路径或 URL）
     
     Returns:
         时长（毫秒），失败返回 0
+    
+    Raises:
+        Exception: 当 ffprobe 执行失败、超时或输出无法解析时
     """
+    import tempfile
+    from utils.oss_utils import OssMixin
+    
+    temp_path = None
     try:
-        import librosa
-        import tempfile
-        from utils.oss_utils import OssMixin
-        
         # 如果是 URL，先下载到临时文件
-        if audio_path.startswith('http://') or audio_path.startswith('https://'):
+        if media_path.startswith('http://') or media_path.startswith('https://'):
             oss = OssMixin()
-            with tempfile.NamedTemporaryFile(suffix=get_file_extension(audio_path), delete=False) as tmp_file:
+            with tempfile.NamedTemporaryFile(suffix=get_file_extension(media_path), delete=False) as tmp_file:
                 temp_path = tmp_file.name
-            try:
-                oss.get_object_file(audio_path, temp_path)
-                y, sr = librosa.load(temp_path, sr=None)
-                duration = int(len(y) / sr * 1000)
-                os.remove(temp_path)  # 清理临时文件
-                return duration
-            except Exception as e:
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
-                raise e
+            oss.get_object_file(media_path, temp_path)
+            target_path = temp_path
         else:
-            # 本地文件直接加载
-            y, sr = librosa.load(audio_path, sr=None)
-            return int(len(y) / sr * 1000)
-            
-    except ImportError:
-        logger.error("librosa 未安装，请运行: pip install librosa")
-        return 0
+            target_path = media_path
+        
+        # 使用 ffprobe 获取时长
+        cmd = [
+            'ffprobe',
+            '-v', 'error',
+            '-show_entries', 'format=duration',
+            '-of', 'json',
+            target_path
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            raise Exception(f"ffprobe failed - exit code: {result.returncode}, error: {result.stderr}")
+        
+        data = json.loads(result.stdout)
+        duration = int(float(data['format']['duration']) * 1000)
+        
+        logger.info(f"Media duration: {media_path} -> {duration}ms")
+        return duration
+        
+    except subprocess.TimeoutExpired:
+        logger.error(f"ffprobe timeout (10s) - {media_path}")
+        raise Exception(f"ffprobe timeout (10s) - {media_path}")
+    except json.JSONDecodeError as e:
+        logger.error(f"ffprobe JSON parse failed: {e}, output: {result.stdout}")
+        raise Exception(f"ffprobe JSON parse failed: {e}, output: {result.stdout}")
     except Exception as e:
-        logger.error(f"获取音频时长失败: {audio_path}, {e}")
-        return 0
+        logger.error(f"Get media duration failed: {media_path}, {e}")
+        raise
+    finally:
+        # 清理临时文件
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception as e:
+                logger.warning(f"Failed to remove temp file: {temp_path}, {e}")
     
 def load_json_data(path: str) -> dict:
     """加载 JSON 文件，失败时抛出异常"""

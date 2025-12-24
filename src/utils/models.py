@@ -15,7 +15,7 @@ class JianYingBaseInfo:
     width: int = 720
     height: int = 1280
     fps: int = 30
-    duration: int = 0  # 持续时间（秒）
+    duration: int = 5000  # 持续时间（毫秒）
     unique_id: str | None = None  # 唯一ID，None则自动生成
 
     def to_json(self) -> str:
@@ -125,7 +125,7 @@ class JianYingMediaMaterialInfo(BaseModel):
     adjust_info: Optional[AdjustInfo] = Field(None, description="调节信息")
     material_name: str = Field('', description="素材名称")
     category: str = Field('', description="素材分类")
-    duration: Optional[int] = Field(None, description="素材时长（毫秒）")
+    duration: Optional[int] = Field(5000, description="素材时长（毫秒）")
     
     class Config:
         json_schema_extra = {
@@ -161,9 +161,9 @@ class JianYingMediaMaterialInfo(BaseModel):
         # 自动设置 duration
         if self.duration is None and self.url:
             if self.media_type == 'video' and get_material_type_by_extension(self.url) == 'video':
-                self.duration = get_video_duration(self.url)
+                self.duration = get_media_duration(self.url)
             elif self.media_type in ['audio', 'oral']:
-                self.duration = get_audio_duration(self.url)
+                self.duration = get_media_duration(self.url)
             else:
                 self.duration = 5000
         return self
