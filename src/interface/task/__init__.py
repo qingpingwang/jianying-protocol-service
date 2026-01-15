@@ -2,6 +2,7 @@
 from . import (
     create_task,
     get_task,
+    remove_task,
     export_task,
     get_draft_info,
     get_draft_meta_info
@@ -10,6 +11,7 @@ from . import (
 __all__ = [
     'create_task',
     'get_task',
+    'remove_task',
     'export_task',
     'get_draft_info',
     'get_draft_meta_info'

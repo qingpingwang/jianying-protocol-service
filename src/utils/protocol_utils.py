@@ -133,7 +133,7 @@ class JianYingProtocol(OssMixin):
             if url.startswith('http'):
                 self.get_object_file(url, file_path)
             else:
-                shutil.copy(url, file_path)
+                shutil.copy(os.getenv("JY_Res_Dir", "") + url, file_path)
         return f'##_draftpath_placeholder_0E685133-18CE-45ED-8CB8-2904A212EC80_##/Resources/{file_name}'
     
     # ==================== 轨道管理 ====================
@@ -449,6 +449,32 @@ class JianYingProtocol(OssMixin):
         )
         return segment_id
     
+    def add_audio_effect_segment_to_track(
+        self, 
+        track_id: str, 
+        audio_material: dict, 
+        start_time: int | None = None
+    ) -> str:
+        """添加音效片段到轨道"""
+        # 1. 验证
+        track = self._validate_and_get_track(track_id, 'audio')
+        if not track:
+            raise ValueError(f"Track not found: {track_id}")
+        # 创建材质
+        material_id = self.add_material('audios', audio_material)
+        # 构建片段
+        segment = build_media_segment(
+            material_id=material_id,
+            offset_time=self._calculate_offset_time(track_id, start_time),
+            from_time=0,
+            duration=audio_material['duration'],
+            speed=1.0,
+            volume=1.0
+        )
+        # 完成片段
+        segment_id = self._finalize_segment(track, segment)
+        return segment_id
+    
     def add_text_segment_to_track(
         self, 
         track_id: str, 
@@ -572,11 +598,13 @@ class JianYingProtocol(OssMixin):
         segment_id: str, 
         internal_material: JianYingInternalMaterialInfo
     ) -> str:
-        """添加内部材质到片段（转场、动画）"""
+        """添加内部材质到片段（动画、转场、特效、滤镜）"""
         # 类型映射配置
         type_mapping = {
             'sticker_animation': 'material_animations',
-            'transition': 'transitions'
+            'transition': 'transitions',
+            "video_effect": "video_effects",
+            "filter": "effects"
         }
         
         track = self.get_track_by_segment_id(segment_id)
@@ -621,6 +649,31 @@ class JianYingProtocol(OssMixin):
         ))
         if not ret:
             raise ValueError(f"Failed to update text material: {segment_id}")
+        return segment['id']
+    
+    def update_text_content(
+        self, 
+        segment_id: str, 
+        text: str
+    ) -> str:
+        """更新文本内容"""
+        track = self.get_track_by_segment_id(segment_id)
+        if not track:
+            raise ValueError(f"Track not found: {segment_id}")
+    
+        segment = next((seg for seg in track['segments'] if seg['id'] == segment_id), None)
+        if not segment:
+            raise ValueError(f"Segment not found: {segment_id}")
+        
+        material = self.get_material('texts', segment['material_id'])
+        if not material:
+            raise ValueError(f"Material not found: {segment['material_id']}")
+        material['text'] = text
+        content = json.loads(material['content'])
+        content['text'] = text
+        content['styles'][0]['range'] = [0, len(text)]
+        material['content'] = json.dumps(content)
+        self.update_material('texts', segment['material_id'], material)
         return segment['id']
     
     def update_segment_transform_info(
@@ -901,7 +954,7 @@ class JianYingProtocol(OssMixin):
         material: JianYingInternalMaterialInfo,
         start_time: int | None = None,
         duration: int = 5000,
-        transform_info: SegmentTransformInfo = None
+        transform_info: Optional[SegmentTransformInfo] = None
     ) -> str:
         """通用的简单片段添加方法"""
         # 1. 获取配置

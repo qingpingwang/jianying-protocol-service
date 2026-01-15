@@ -80,6 +80,11 @@ class JianYingProject():
         """
         return self._compress_and_upload_to_oss()
     
+    def get_project_absolute_path(self):
+        """
+        返回项目绝对路径
+        """
+        return get_project_path(self.protocol.base_info.unique_id)
     
     # ==================== 内部方法 ====================
     

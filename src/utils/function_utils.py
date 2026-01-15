@@ -256,6 +256,7 @@ def build_segmen_no_source(
             'duration': duration
         },
         'visible': True,
+        'extra_material_refs': []
     }
     
 def build_crop_info(top_x, top_y, width, height):

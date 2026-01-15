@@ -167,6 +167,11 @@ async def api_get_task(task_id: str):
     """获取任务信息"""
     return get_task.handler(task_id, task_manager)
 
+@app.delete("/tasks", response_model=BaseResponse, tags=["任务管理"])
+async def api_remove_task(request: remove_task.RemoveTaskRequest):
+    """删除任务"""
+    return remove_task.handler(request, task_manager)
+
 @app.post("/export", response_model=BaseResponse, tags=["任务管理"])
 async def api_export_task(request: export_task.ExportTaskRequest):
     """导出任务到 OSS"""
@@ -243,6 +248,11 @@ async def api_add_filter_segment(request: add_filter_segment.AddFilterSegmentReq
 async def api_add_effect_segment(request: add_effect_segment.AddEffectSegmentRequest):
     """添加视频特效片段"""
     return add_effect_segment.handler(request, task_manager)
+
+@app.post("/segments/audio-effect", response_model=BaseResponse, tags=["片段管理"])
+async def api_add_audio_effect_segment(request: add_audio_effect_segment.AddAudioEffectSegmentRequest):
+    """添加音效片段"""
+    return add_audio_effect_segment.handler(request, task_manager)
 
 @app.post("/segments/internal-material", response_model=BaseResponse, tags=["片段管理"])
 async def api_add_internal_material_to_segment(request: add_internal_material_to_segment.AddInternalMaterialToSegmentRequest):

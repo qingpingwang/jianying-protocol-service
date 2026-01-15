@@ -159,10 +159,8 @@ class JianYingMediaMaterialInfo(BaseModel):
             self.material_name = os.path.basename(unquote(path))
         
         # 自动设置 duration
-        if self.duration is None and self.url:
-            if self.media_type == 'video' and get_material_type_by_extension(self.url) == 'video':
-                self.duration = get_media_duration(self.url)
-            elif self.media_type in ['audio', 'oral']:
+        if (self.duration is None or self.duration <= 0) and self.url:
+            if self.media_type in ["video", "audio", "oral"]:
                 self.duration = get_media_duration(self.url)
             else:
                 self.duration = 5000
