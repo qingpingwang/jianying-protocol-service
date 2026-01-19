@@ -1,8 +1,6 @@
 # 剪映协议服务 (JianYing Protocol Service)
 
 > 一个用于程序化创建和管理剪映草稿项目的 HTTP API 服务
-> 参考服务：
->
 > [剪映agent](https://wangqingping.top/resume)
 
 ## 📖 项目简介
