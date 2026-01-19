@@ -1,6 +1,9 @@
 # 剪映协议服务 (JianYing Protocol Service)
 
 > 一个用于程序化创建和管理剪映草稿项目的 HTTP API 服务
+> 参考服务：
+>
+> [剪映agent](https://wangqingping.top/resume)
 
 ## 📖 项目简介
 
@@ -40,8 +43,9 @@ cp env.example .env
 ```
 
 **环境变量说明：**
+
 - `OSS_AK` - 阿里云 OSS Access Key
-- `OSS_SK` - 阿里云 OSS Secret Key  
+- `OSS_SK` - 阿里云 OSS Secret Key
 - `PROJECT_REMOTE_PATH` - 项目远程存储路径
 
 > ⚠️ 注意：`.env` 文件包含敏感信息，已自动添加到 `.gitignore`，不会被提交到代码库
@@ -62,33 +66,37 @@ python src/main.py
 
 ### 系统接口
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/` | GET | 服务信息 |
-| `/health` | GET | 健康检查 |
+
+| 接口      | 方法 | 说明     |
+| --------- | ---- | -------- |
+| `/`       | GET  | 服务信息 |
+| `/health` | GET  | 健康检查 |
 
 ### 任务管理
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/tasks` | POST | 创建新任务 |
-| `/tasks/{task_id}` | GET | 获取任务信息 |
-| `/export` | POST | 导出任务到 OSS |
-| `/tasks/{task_id}/draft_info` | GET | 获取草稿数据 |
-| `/tasks/{task_id}/draft_meta_info` | GET | 获取草稿元信息 |
+
+| 接口                               | 方法 | 说明           |
+| ---------------------------------- | ---- | -------------- |
+| `/tasks`                           | POST | 创建新任务     |
+| `/tasks/{task_id}`                 | GET  | 获取任务信息   |
+| `/export`                          | POST | 导出任务到 OSS |
+| `/tasks/{task_id}/draft_info`      | GET  | 获取草稿数据   |
+| `/tasks/{task_id}/draft_meta_info` | GET  | 获取草稿元信息 |
 
 ### 轨道管理
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/tracks` | POST | 创建轨道 |
-| `/tracks` | DELETE | 删除轨道 |
-| `/tasks/{task_id}/tracks` | GET | 获取所有轨道 |
-| `/tasks/{task_id}/tracks/{track_id}` | GET | 获取指定轨道 |
-| `/tasks/{task_id}/tracks/count` | GET | 获取轨道数量 |
-| `/tasks/{task_id}/tracks/index/{index}` | GET | 按索引获取轨道 |
+
+| 接口                                    | 方法   | 说明           |
+| --------------------------------------- | ------ | -------------- |
+| `/tracks`                               | POST   | 创建轨道       |
+| `/tracks`                               | DELETE | 删除轨道       |
+| `/tasks/{task_id}/tracks`               | GET    | 获取所有轨道   |
+| `/tasks/{task_id}/tracks/{track_id}`    | GET    | 获取指定轨道   |
+| `/tasks/{task_id}/tracks/count`         | GET    | 获取轨道数量   |
+| `/tasks/{task_id}/tracks/index/{index}` | GET    | 按索引获取轨道 |
 
 **支持的轨道类型：**
+
 - `video` - 视频轨道
 - `audio` - 音频轨道
 - `text` - 文本轨道
@@ -98,21 +106,22 @@ python src/main.py
 
 ### 片段管理
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/segments/media` | POST | 添加媒体片段（视频/图片/音频） |
-| `/segments/text` | POST | 添加文本片段 |
-| `/segments/sticker` | POST | 添加贴纸片段 |
-| `/segments/complex-text` | POST | 添加复杂文本片段 |
-| `/segments/filter` | POST | 添加滤镜片段 |
-| `/segments/effect` | POST | 添加视频特效片段 |
-| `/segments/internal-material` | POST | 添加内部材质（转场/动画） |
-| `/segments/transform` | POST | 更新片段变换信息 |
-| `/segments/text-material` | POST | 更新文本内容和样式 |
-| `/segments/adjust-info` | POST | 更新色彩调节参数 |
-| `/segments` | DELETE | 删除片段 |
-| `/tasks/{task_id}/tracks/{track_id}/segments/count` | GET | 获取片段数量 |
-| `/tasks/{task_id}/tracks/{track_id}/segments/index/{index}` | GET | 按索引获取片段 |
+
+| 接口                                                        | 方法   | 说明                           |
+| ----------------------------------------------------------- | ------ | ------------------------------ |
+| `/segments/media`                                           | POST   | 添加媒体片段（视频/图片/音频） |
+| `/segments/text`                                            | POST   | 添加文本片段                   |
+| `/segments/sticker`                                         | POST   | 添加贴纸片段                   |
+| `/segments/complex-text`                                    | POST   | 添加复杂文本片段               |
+| `/segments/filter`                                          | POST   | 添加滤镜片段                   |
+| `/segments/effect`                                          | POST   | 添加视频特效片段               |
+| `/segments/internal-material`                               | POST   | 添加内部材质（转场/动画）      |
+| `/segments/transform`                                       | POST   | 更新片段变换信息               |
+| `/segments/text-material`                                   | POST   | 更新文本内容和样式             |
+| `/segments/adjust-info`                                     | POST   | 更新色彩调节参数               |
+| `/segments`                                                 | DELETE | 删除片段                       |
+| `/tasks/{task_id}/tracks/{track_id}/segments/count`         | GET    | 获取片段数量                   |
+| `/tasks/{task_id}/tracks/{track_id}/segments/index/{index}` | GET    | 按索引获取片段                 |
 
 ## 💡 使用示例
 
@@ -213,6 +222,7 @@ python test/test.py
 测试文件 `test/test.py` 包含完整的功能演示：
 
 #### 1. 视频片段测试 (`segment_id0`)
+
 ```python
 video_material = JianYingMediaMaterialInfo(
     url='https://example.com/video.mp4',
@@ -221,20 +231,24 @@ video_material = JianYingMediaMaterialInfo(
     adjust_info=adjust_info()  # 调节信息（色温、亮度等）
 )
 ```
+
 - 支持倍速播放
 - 支持色彩调节（色温、饱和度、亮度等）
 - 自动添加转场和入场动画
 
 #### 2. 图片片段测试 (`segment_id1`)
+
 ```python
 image_material = JianYingMediaMaterialInfo(
     url='https://example.com/image.gif',
     media_type='photo'
 )
 ```
+
 - 支持静态图片和 GIF
 
 #### 3. 音频片段测试 (`segment_id2`)
+
 ```python
 audio_material = JianYingMediaMaterialInfo(
     url='https://example.com/audio.mp3',
@@ -243,10 +257,12 @@ audio_material = JianYingMediaMaterialInfo(
     media_type='audio'
 )
 ```
+
 - 支持音频裁剪
 - 自动检测时长
 
 #### 4. 文本片段测试 (`segment_id3`)
+
 ```python
 text_material = JianYingTextMaterialInfo(
     text='测试文本',
@@ -254,21 +270,26 @@ text_material = JianYingTextMaterialInfo(
     background_alpha=0.5
 )
 ```
+
 - 支持文本样式定制
 - 支持背景色和透明度
 
 #### 5. 贴纸片段测试 (`segment_id4`)
+
 - 使用剪映内置贴纸
 
 #### 6. 复杂文本测试 (`segment_id5`)
+
 - 支持花字特效
 - 支持气泡样式
 - 支持入场动画
 
 #### 7. 滤镜测试 (`segment_id6`)
+
 - 高清增强滤镜
 
 #### 8. 视频特效测试 (`segment_id7`)
+
 - 放大镜特效
 
 ### 辅助函数说明
@@ -276,6 +297,7 @@ text_material = JianYingTextMaterialInfo(
 #### `adjust_info()` - 色彩调节
 
 支持的调节参数：
+
 - `temperature` - 色温 (-50 ~ 50)
 - `tone` - 色调 (-50 ~ 50)
 - `saturation` - 饱和度 (-50 ~ 50)
@@ -286,6 +308,7 @@ text_material = JianYingTextMaterialInfo(
 - `vignetting` - 暗角 (-50 ~ 50)
 
 #### 其他辅助函数
+
 - `sticker_material_info()` - 贴纸素材
 - `transition_effect_info()` - "推近 II" 转场效果
 - `animation_effect_info()` - "展开" 入场动画
@@ -344,9 +367,11 @@ jy-protocol-server/
 ### 关键类说明
 
 #### `JianYingProtocol`
+
 核心协议处理器，负责所有剪映草稿操作。
 
 **主要方法：**
+
 - `add_track()` - 添加轨道
 - `add_media_segment_to_track()` - 添加媒体片段
 - `add_text_segment_to_track()` - 添加文本片段
@@ -357,20 +382,24 @@ jy-protocol-server/
 - `add_internal_material_to_segment()` - 添加转场/动画
 
 #### `TaskManager`
+
 任务生命周期管理器。
 
 **特性：**
+
 - 线程安全
 - 自动落盘
 - 闲置清理（60秒）
 - 上下文管理器支持
 
 #### `JianYingProject`
+
 项目封装类，提供统一的项目操作接口。
 
 ## ⚙️ 配置说明
 
 ### 轨道类型配置
+
 ```python
 JIANYING_TRACK_TYPES = [
     'audio', 'video', 'effect', 'filter', 
@@ -379,6 +408,7 @@ JIANYING_TRACK_TYPES = [
 ```
 
 ### 素材类型配置
+
 ```python
 JIANYING_MATERIAL_TYPES = [
     'videos', 'texts', 'audios', 'stickers', 
@@ -388,6 +418,7 @@ JIANYING_MATERIAL_TYPES = [
 ```
 
 ### 片段类型配置
+
 ```python
 SEGMENT_TYPE_CONFIG = {
     'sticker': {
@@ -404,6 +435,7 @@ SEGMENT_TYPE_CONFIG = {
 ## 📊 数据模型
 
 ### JianYingBaseInfo
+
 ```python
 @dataclass
 class JianYingBaseInfo:
@@ -416,6 +448,7 @@ class JianYingBaseInfo:
 ```
 
 ### JianYingMediaMaterialInfo
+
 ```python
 class JianYingMediaMaterialInfo(BaseModel):
     url: str                      # 媒体URL
@@ -429,6 +462,7 @@ class JianYingMediaMaterialInfo(BaseModel):
 ```
 
 ### SegmentTransformInfo
+
 ```python
 class SegmentTransformInfo(BaseModel):
     scale_x: float = 1.0          # X轴缩放
@@ -441,6 +475,7 @@ class SegmentTransformInfo(BaseModel):
 ## 🔒 最佳实践
 
 ### 1. 使用上下文管理器
+
 ```python
 with task_manager.get_task(task_id) as task:
     protocol = task.jianyingProject.protocol
@@ -448,6 +483,7 @@ with task_manager.get_task(task_id) as task:
 ```
 
 ### 2. 错误处理
+
 ```python
 try:
     segment_id = protocol.add_media_segment_to_track(...)
@@ -456,10 +492,12 @@ except ValueError as e:
 ```
 
 ### 3. 资源管理
+
 - 使用完毕后及时调用 `export` 导出项目
 - 服务器会自动清理超过 60 秒未使用的任务
 
 ### 4. 性能优化
+
 - 大量操作时使用批量接口
 - 合理设置 OSS 缓存
 - 控制并发任务数量
@@ -468,16 +506,16 @@ except ValueError as e:
 
 ### 常见问题
 
-**Q: 提示 "Track not found"**  
+**Q: 提示 "Track not found"**
 A: 确保先创建轨道，再添加片段。
 
-**Q: 视频无法下载**  
+**Q: 视频无法下载**
 A: 检查 OSS 配置和网络连接，确保 `.env` 文件中的 `OSS_AK` 和 `OSS_SK` 配置正确。
 
-**Q: 片段时长计算错误**  
+**Q: 片段时长计算错误**
 A: 确保视频 URL 可访问，服务器需要读取视频元信息。
 
-**Q: 复杂文本不生效**  
+**Q: 复杂文本不生效**
 A: 检查 `complex_style_info` 结构是否完整，参考测试用例。
 
 ### 日志查看
